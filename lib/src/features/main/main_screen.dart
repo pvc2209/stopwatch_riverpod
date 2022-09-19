@@ -110,7 +110,7 @@ class _MainState extends ConsumerState<MainScreen> {
                       return;
                     }
 
-                    ref.read(iapProvider.notifier).useDiamonds();
+                    // ref.read(iapProvider.notifier).useDiamonds();
                     ref.read(mainProvider.notifier).addLap(
                           _textController.text,
                           stopwatchKey.currentState?.elapsed ?? Duration.zero,
@@ -164,7 +164,7 @@ class _MainState extends ConsumerState<MainScreen> {
                       );
                     },
                     onDelete: () {
-                      ref.read(mainProvider.notifier).removeLap(index);
+                      ref.read(mainProvider.notifier).removeLap(lap);
                     },
                   );
                 }),

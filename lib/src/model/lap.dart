@@ -1,15 +1,16 @@
 import 'dart:convert';
 
+import 'package:equatable/equatable.dart';
 import 'package:uuid/uuid.dart';
 
 const Uuid _uuid = Uuid();
 
-class Lap {
+class Lap extends Equatable {
   final String id;
   final int elapsed; // in milliseconds
   final String name;
 
-  Lap({
+  const Lap({
     required this.id,
     required this.elapsed,
     required this.name,
@@ -57,4 +58,7 @@ class Lap {
       name: name ?? this.name,
     );
   }
+
+  @override
+  List<Object> get props => [id, elapsed, name];
 }

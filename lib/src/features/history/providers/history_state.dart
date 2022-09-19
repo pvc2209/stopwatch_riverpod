@@ -14,6 +14,7 @@ class HistoryState {
   }
 
   HistoryState copyWith({
+    Lap? deletedLap,
     List<Lap>? laps,
   }) {
     return HistoryState(

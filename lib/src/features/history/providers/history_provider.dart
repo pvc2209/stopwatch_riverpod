@@ -11,7 +11,7 @@ class HistoryNotifier extends StateNotifier<HistoryState> {
   HistoryNotifier() : super(HistoryState.initial());
 
   Future<void> loadLaps() async {
-    final laps = (await SPref.getData()).reversed.toList();
+    final laps = await SPref.getData();
     state = state.copyWith(laps: laps);
   }
 

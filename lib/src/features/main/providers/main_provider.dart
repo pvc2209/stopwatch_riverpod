@@ -1,21 +1,28 @@
 import 'package:anim_clock/src/features/history/providers/history_provider.dart';
+import 'package:anim_clock/src/features/history/providers/history_state.dart';
 import 'package:anim_clock/src/features/main/providers/main_state.dart';
 import 'package:anim_clock/src/model/lap.dart';
 import 'package:anim_clock/src/storage/sprefs.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final mainProvider = StateNotifierProvider<MainNotifier, MainState>(
   (ref) {
-    // https://stackoverflow.com/questions/66409658/flutter-riverpod-need-to-get-old-state-from-statenotifierprovider-before-updati
-    // When delete an item in history, the state of mainProvider
-    // I want to delete the this item in mainProvider too
-    // If I use ref.watch(historyProvider) to get history list, but two list are different
-    // How can I get the id of the item I want to delete?
-    // And if I can have the id, this function still return brand new MainNotifier object
+    final MainNotifier notifier = MainNotifier();
 
-    ref.watch(historyProvider);
+    ref.listen<HistoryState>(historyProvider, (previous, next) {
+      final List<Lap> oldLaps = previous?.laps ?? [];
+      final List<Lap> newLaps = next.laps;
 
-    return MainNotifier();
+      for (final lap in oldLaps) {
+        if (!newLaps.contains(lap)) {
+          notifier.update(lap);
+          break;
+        }
+      }
+    });
+
+    return notifier;
   },
 );
 
@@ -28,6 +35,16 @@ class MainNotifier extends StateNotifier<MainState> {
 
   void reset() {
     state = state.copyWith(isRunning: false, currentLap: 1, laps: []);
+  }
+
+  // Remove lap from the list without delete it from storage
+  // because lap has been deleted in history
+  void update(Lap lap) {
+    final List<Lap> newLaps = state.laps.where((e) => e.id != lap.id).toList();
+
+    state = state.copyWith(
+      laps: newLaps,
+    );
   }
 
   Future<void> addLap(String name, Duration elapsed) async {
@@ -48,19 +65,14 @@ class MainNotifier extends StateNotifier<MainState> {
     }
   }
 
-  Future<void> removeLap(int index) async {
-    if (index < 0 || index >= state.laps.length) {
-      return;
-    }
-
-    final List<Lap> newLaps = [...state.laps];
-    final removedLap = newLaps.removeAt(index);
+  Future<void> removeLap(Lap lap) async {
+    final List<Lap> newLaps = state.laps.where((e) => e.id != lap.id).toList();
 
     state = state.copyWith(
       laps: newLaps,
     );
 
-    await SPref.removeData(removedLap);
+    await SPref.removeData(lap);
   }
 
   Future<void> editLap(Lap lap) async {
